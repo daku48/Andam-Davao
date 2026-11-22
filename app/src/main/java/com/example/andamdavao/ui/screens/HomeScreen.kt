@@ -22,11 +22,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.andamdavao.data.model.PublicAnnouncement
 import com.example.andamdavao.data.model.SampleData
+import com.example.andamdavao.data.repository.AnnouncementRepository
 import com.example.andamdavao.ui.theme.*
 
-/**
- * Home Dashboard screen bound to sample public safety data.
- */
 @Composable
 fun HomeScreen(
     onNavigateToMap: () -> Unit,
@@ -36,7 +34,15 @@ fun HomeScreen(
     onAnnouncementSelected: (PublicAnnouncement) -> Unit
 ) {
     var searchQuery by remember { mutableStateOf("") }
-    val primaryAlert = SampleData.sampleAnnouncements.firstOrNull { it.severity == "Urgent" }
+    var announcements by remember { mutableStateOf(SampleData.sampleAnnouncements) }
+
+    val announcementRepo = remember { AnnouncementRepository() }
+
+    LaunchedEffect(Unit) {
+        announcements = announcementRepo.fetchPublicAnnouncements()
+    }
+
+    val primaryAlert = announcements.firstOrNull { it.severity == "Urgent" }
 
     LazyColumn(
         modifier = Modifier
@@ -44,7 +50,6 @@ fun HomeScreen(
             .background(LightGrayBackground),
         contentPadding = PaddingValues(bottom = 24.dp)
     ) {
-        // Top Header Bar
         item {
             Surface(
                 color = SurfaceWhite,
@@ -90,7 +95,6 @@ fun HomeScreen(
                         }
                     }
 
-                    // Notification Bell Icon with Badge
                     Box(contentAlignment = Alignment.TopEnd) {
                         IconButton(onClick = { }) {
                             Icon(
@@ -112,7 +116,6 @@ fun HomeScreen(
             }
         }
 
-        // Active Emergency Alert Banner
         primaryAlert?.let { alert ->
             item {
                 Box(modifier = Modifier.padding(16.dp)) {
@@ -179,7 +182,6 @@ fun HomeScreen(
             }
         }
 
-        // Search Bar
         item {
             Box(modifier = Modifier.padding(horizontal = 16.dp)) {
                 OutlinedTextField(
@@ -205,7 +207,6 @@ fun HomeScreen(
             }
         }
 
-        // Quick Links Grid
         item {
             Spacer(modifier = Modifier.height(16.dp))
             Column(modifier = Modifier.padding(horizontal = 16.dp)) {
@@ -249,7 +250,6 @@ fun HomeScreen(
             }
         }
 
-        // Latest Updates Section Header
         item {
             Spacer(modifier = Modifier.height(20.dp))
             Row(
@@ -277,7 +277,6 @@ fun HomeScreen(
             Spacer(modifier = Modifier.height(10.dp))
         }
 
-        // Sample Announcements
         SampleData.sampleAnnouncements.take(2).forEach { announcement ->
             item {
                 Card(

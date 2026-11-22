@@ -1,7 +1,6 @@
 package com.example.andamdavao.ui.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -20,12 +19,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.andamdavao.data.model.EvacuationCenter
 import com.example.andamdavao.data.model.SampleData
+import com.example.andamdavao.data.repository.EvacuationCenterRepository
 import com.example.andamdavao.ui.components.EvacuationStatusBadge
 import com.example.andamdavao.ui.theme.*
 
-/**
- * Evacuation Center Directory screen with filtering & search.
- */
 @Composable
 fun EvacuationDirectoryScreen(
     onCenterSelected: (EvacuationCenter) -> Unit,
@@ -35,7 +32,14 @@ fun EvacuationDirectoryScreen(
     var selectedFilter by remember { mutableStateOf("All") }
     val filters = listOf("All", "Open", "Full", "Closed")
 
-    val filteredCenters = SampleData.sampleCenters.filter { center ->
+    var centersList by remember { mutableStateOf(SampleData.sampleCenters) }
+    val centerRepo = remember { EvacuationCenterRepository() }
+
+    LaunchedEffect(Unit) {
+        centersList = centerRepo.fetchPublicEvacuationCenters()
+    }
+
+    val filteredCenters = centersList.filter { center ->
         val matchesSearch = center.centerName.contains(searchQuery, ignoreCase = true) ||
                 center.barangay.contains(searchQuery, ignoreCase = true) ||
                 center.district.contains(searchQuery, ignoreCase = true)
@@ -55,7 +59,6 @@ fun EvacuationDirectoryScreen(
             .fillMaxSize()
             .background(LightGrayBackground)
     ) {
-        // Top Header
         Surface(
             color = SurfaceWhite,
             shadowElevation = 2.dp,
@@ -81,7 +84,6 @@ fun EvacuationDirectoryScreen(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Search Bar
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
@@ -105,7 +107,6 @@ fun EvacuationDirectoryScreen(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Filter Chips
                 LazyRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
@@ -133,7 +134,6 @@ fun EvacuationDirectoryScreen(
             }
         }
 
-        // Centers List
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(16.dp),
@@ -187,7 +187,6 @@ fun CenterListItem(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Capacity Details
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -209,7 +208,6 @@ fun CenterListItem(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Verification Timestamp
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,

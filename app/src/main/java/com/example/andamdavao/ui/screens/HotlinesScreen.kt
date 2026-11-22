@@ -26,9 +26,6 @@ data class EmergencyHotline(
     val phoneNumber: String
 )
 
-/**
- * Emergency Hotlines screen with verified contact numbers.
- */
 @Composable
 fun HotlinesScreen() {
     val context = LocalContext.current
@@ -46,7 +43,6 @@ fun HotlinesScreen() {
             .fillMaxSize()
             .background(LightGrayBackground)
     ) {
-        // Top Header Banner
         Surface(
             color = PrimaryNavy,
             modifier = Modifier.fillMaxWidth()
@@ -91,7 +87,6 @@ fun HotlinesScreen() {
             }
         }
 
-        // Hotlines Directory List
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(16.dp),
@@ -149,7 +144,6 @@ fun HotlinesScreen() {
                             }
                         }
 
-                        // Call Action Button
                         Button(
                             onClick = {
                                 val intent = Intent(Intent.ACTION_DIAL).apply {

@@ -1,7 +1,5 @@
 package com.example.andamdavao.ui.screens
 
-import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -14,7 +12,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -22,10 +19,8 @@ import androidx.compose.ui.unit.sp
 import com.example.andamdavao.data.model.EvacuationCenter
 import com.example.andamdavao.ui.components.EvacuationStatusBadge
 import com.example.andamdavao.ui.theme.*
+import com.example.andamdavao.utils.LocationUtils
 
-/**
- * Detailed view for a specific Evacuation Center record.
- */
 @Composable
 fun EvacuationCenterDetailScreen(
     center: EvacuationCenter,
@@ -38,7 +33,6 @@ fun EvacuationCenterDetailScreen(
             .fillMaxSize()
             .background(LightGrayBackground)
     ) {
-        // Top Bar
         Surface(
             color = SurfaceWhite,
             shadowElevation = 2.dp,
@@ -77,7 +71,6 @@ fun EvacuationCenterDetailScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Main Hero Info Card
             item {
                 Card(
                     colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
@@ -110,7 +103,6 @@ fun EvacuationCenterDetailScreen(
 
                         Spacer(modifier = Modifier.height(14.dp))
 
-                        // Verification Tag Banner
                         Surface(
                             color = IceBlue,
                             shape = RoundedCornerShape(10.dp),
@@ -146,7 +138,6 @@ fun EvacuationCenterDetailScreen(
                 }
             }
 
-            // Facilities Section Card
             item {
                 Card(
                     colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
@@ -193,7 +184,6 @@ fun EvacuationCenterDetailScreen(
                 }
             }
 
-            // Capacity & Occupancy Card
             item {
                 Card(
                     colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
@@ -246,7 +236,6 @@ fun EvacuationCenterDetailScreen(
                 }
             }
 
-            // Contact & Directions Action Card
             item {
                 Card(
                     colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
@@ -283,11 +272,12 @@ fun EvacuationCenterDetailScreen(
 
                         Button(
                             onClick = {
-                                val gmmIntentUri = Uri.parse("geo:${center.latitude},${center.longitude}?q=${Uri.encode(center.centerName)}")
-                                val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri).apply {
-                                    setPackage("com.google.android.apps.maps")
-                                }
-                                context.startActivity(mapIntent)
+                                LocationUtils.openExactLocationInMap(
+                                    context = context,
+                                    latitude = center.latitude,
+                                    longitude = center.longitude,
+                                    label = center.centerName
+                                )
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = PrimaryNavy),
                             shape = RoundedCornerShape(20.dp),
@@ -304,7 +294,7 @@ fun EvacuationCenterDetailScreen(
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = "Get Directions (Open Map)",
+                                    text = "Get Directions (Exact Davao Pin)",
                                     color = SurfaceWhite,
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Bold

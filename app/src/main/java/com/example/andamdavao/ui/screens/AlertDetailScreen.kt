@@ -8,15 +8,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Campaign
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -24,9 +21,6 @@ import androidx.compose.ui.unit.sp
 import com.example.andamdavao.data.model.PublicAnnouncement
 import com.example.andamdavao.ui.theme.*
 
-/**
- * Detailed View for Public Emergency Announcements.
- */
 @Composable
 fun AlertDetailScreen(
     announcement: PublicAnnouncement,
@@ -45,7 +39,6 @@ fun AlertDetailScreen(
             .fillMaxSize()
             .background(LightGrayBackground)
     ) {
-        // Top Bar
         Surface(
             color = SurfaceWhite,
             shadowElevation = 2.dp,
@@ -79,7 +72,6 @@ fun AlertDetailScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Main Alert Header Card
             item {
                 Card(
                     colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
@@ -121,7 +113,6 @@ fun AlertDetailScreen(
                 }
             }
 
-            // Affected Areas Card
             item {
                 Card(
                     colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
@@ -158,7 +149,6 @@ fun AlertDetailScreen(
                 }
             }
 
-            // Message Body Card
             item {
                 Card(
                     colors = CardDefaults.cardColors(containerColor = SurfaceWhite),

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Andam Davao — Web Administrator Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Firebase Web SDK Compat Libraries -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
+</head>
+<body>
+
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+        <div class="brand-header">
+            <div class="brand-logo">A</div>
+            <div>
+                <div class="brand-title">ANDAM DAVAO</div>
+                <div style="font-size: 11px; color: #a4b7d9;">ADMIN DASHBOARD</div>
+            </div>
+        </div>
+        <ul class="nav-list">
+            <li class="nav-item active" onclick="switchTab('overview')">📊 Overview</li>
+            <li class="nav-item" onclick="switchTab('centers')">🏫 Evacuation Centers</li>
+            <li class="nav-item" onclick="switchTab('announcements')">📢 Advisories & Alerts</li>
+            <li class="nav-item" onclick="switchTab('logs')">📜 Activity Audit Logs</li>
+        </ul>
+    </aside>
+
+    <!-- Main Content Wrapper -->
+    <div class="main-wrapper">
+        <header class="top-bar">
+            <h2>Disaster Risk Reduction Admin Portal</h2>
+            <div class="admin-profile">
+                <div class="admin-avatar" id="adminAvatar">AD</div>
+                <div>
+                    <div style="font-weight: 700; font-size: 14px;" id="adminName">DRRMO Verifier</div>
+                    <div style="font-size: 11px; color: var(--text-secondary);" id="adminRole">Super Administrator</div>
+                </div>
+                <button class="btn-danger" style="margin-left: 16px;" onclick="handleSignOut()">Sign Out</button>
+            </div>
+        </header>
+
+        <main class="content-area">
+            <!-- TAB 1: OVERVIEW METRICS -->
+            <section id="tab-overview">
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-title">Total Registered Centers</div>
+                        <div class="metric-value" id="metricTotalCenters">5</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-title">Verified Active Centers</div>
+                        <div class="metric-value" style="color: var(--status-open);" id="metricVerifiedCenters">4</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-title">Open Centers Capacity</div>
+                        <div class="metric-value" style="color: var(--royal-blue);" id="metricOpenCapacity">2,400</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-title">Published Public Alerts</div>
+                        <div class="metric-value" style="color: var(--crimson-red);" id="metricAlertsCount">3</div>
+                    </div>
+                </div>
+
+                <div class="panel-card">
+                    <h3>Recent Administrative Verification Activity</h3>
+                    <table class="data-table" style="margin-top: 16px;">
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Admin User</th>
+                                <th>Action Performed</th>
+                                <th>Record Reference</th>
+                            </tr>
+                        </thead>
+                        <tbody id="overviewActivityBody">
+                            <tr>
+                                <td>2026-11-19 08:30 AM</td>
+                                <td>DRRMO Inspector 1</td>
+                                <td>Updated Center Status to OPEN</td>
+                                <td>Rizal Memorial Coliseum</td>
+                            </tr>
+                            <tr>
+                                <td>2026-11-19 09:15 AM</td>
+                                <td>Barangay Response Lead</td>
+                                <td>Updated Center Status to FULL</td>
+                                <td>City High Gym</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- TAB 2: EVACUATION CENTERS MANAGEMENT -->
+            <section id="tab-centers" style="display: none;">
+                <div class="panel-card">
+                    <div class="panel-header">
+                        <h3>Evacuation Center Records Directory</h3>
+                        <button class="btn-primary" onclick="openCenterModal()">+ Register New Center</button>
+                    </div>
+
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Center Name</th>
+                                <th>Barangay / District</th>
+                                <th>Status</th>
+                                <th>Verification</th>
+                                <th>Occupancy</th>
+                                <th>Last Verified</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="centersTableBody">
+                            <!-- Populated dynamically via app.js -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- TAB 3: ANNOUNCEMENTS MANAGEMENT -->
+            <section id="tab-announcements" style="display: none;">
+                <div class="panel-card">
+                    <div class="panel-header">
+                        <h3>Emergency Advisories & Public Announcements</h3>
+                        <button class="btn-primary" onclick="openAnnouncementModal()">+ Create Announcement Draft</button>
+                    </div>
+
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Severity</th>
+                                <th>Issuing Agency</th>
+                                <th>Affected Areas</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="announcementsTableBody">
+                            <!-- Populated dynamically via app.js -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- TAB 4: AUDIT LOGS -->
+            <section id="tab-logs" style="display: none;">
+                <div class="panel-card">
+                    <h3>Firestore Administrative Audit Trail</h3>
+                    <table class="data-table" style="margin-top: 16px;">
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Admin UID</th>
+                                <th>Collection</th>
+                                <th>Action</th>
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody id="auditLogsBody">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal for Creating/Editing Evacuation Center -->
+    <div class="modal-overlay" id="centerModal" style="display: none;">
+        <div class="modal-content">
+            <h3 id="centerModalTitle">Register New Evacuation Center</h3>
+            <form id="centerForm" style="margin-top: 16px;" onsubmit="handleSaveCenter(event)">
+                <div class="form-group">
+                    <label>Center Name</label>
+                    <input type="text" id="centerName" class="form-control" required placeholder="e.g. Rizal Memorial Coliseum">
+                </div>
+                <div class="form-group">
+                    <label>Address & Location</label>
+                    <input type="text" id="centerAddress" class="form-control" required placeholder="e.g. Rizal Park, Poblacion">
+                </div>
+                <div style="display: flex; gap: 12px;">
+                    <div class="form-group" style="flex: 1;">
+                        <label>Barangay</label>
+                        <input type="text" id="centerBarangay" class="form-control" required placeholder="Poblacion 4-A">
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label>District</label>
+                        <input type="text" id="centerDistrict" class="form-control" required placeholder="Poblacion District">
+                    </div>
+                </div>
+                <div style="display: flex; gap: 12px;">
+                    <div class="form-group" style="flex: 1;">
+                        <label>Total Capacity (persons)</label>
+                        <input type="number" id="centerCapacity" class="form-control" required value="1000">
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label>Current Status</label>
+                        <select id="centerStatus" class="form-control">
+                            <option value="Open">Open</option>
+                            <option value="Full">Full</option>
+                            <option value="Closed">Closed</option>
+                            <option value="Status unknown">Status unknown</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+                    <button type="button" class="btn-danger" onclick="closeCenterModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Save Center Record</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

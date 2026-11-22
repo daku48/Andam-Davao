@@ -1,8 +1,5 @@
 package com.example.andamdavao.data.model
 
-/**
- * Data model for Evacuation Center records in Davao City.
- */
 data class EvacuationCenter(
     val id: String,
     val centerName: String,
@@ -14,8 +11,8 @@ data class EvacuationCenter(
     val facilities: List<String>,
     val capacity: Int,
     val currentOccupancy: Int,
-    val status: String, // "Open", "Full", "Closed", "Status unknown"
-    val verificationStatus: String, // "Verified", "Awaiting Verification", "Needing Review"
+    val status: String,
+    val verificationStatus: String,
     val verifiedAt: String,
     val verifiedBy: String,
     val contactNumber: String,

@@ -6,23 +6,17 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.andamdavao.ui.components.AndamShieldLogo
 import com.example.andamdavao.ui.components.TopWaveAccent
 import com.example.andamdavao.ui.theme.*
 
-/**
- * Welcome / Access Screen: Guest-First entry point.
- */
 @Composable
 fun WelcomeScreen(
     onContinueAsGuest: () -> Unit,
@@ -44,15 +38,12 @@ fun WelcomeScreen(
         ) {
             Spacer(modifier = Modifier.height(40.dp))
 
-            // Main Brand Section
             AndamShieldLogo(showTagline = true)
 
-            // Access Actions Section
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Info Banner clarifying guest access
                 Card(
                     colors = CardDefaults.cardColors(containerColor = IceBlue),
                     shape = RoundedCornerShape(12.dp),
@@ -82,7 +73,6 @@ fun WelcomeScreen(
                     }
                 }
 
-                // Primary Guest Action Button
                 Button(
                     onClick = onContinueAsGuest,
                     colors = ButtonDefaults.buttonColors(containerColor = PrimaryNavy),
@@ -113,7 +103,6 @@ fun WelcomeScreen(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Secondary Sign In Button
                 OutlinedButton(
                     onClick = onSignInClicked,
                     shape = RoundedCornerShape(24.dp),

@@ -17,9 +17,6 @@ sealed class Screen {
     object Main : Screen()
 }
 
-/**
- * Main Activity and entry point for Andam Davao application.
- */
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,7 +43,7 @@ class MainActivity : ComponentActivity() {
                             onSignInClicked = {
                                 Toast.makeText(
                                     this,
-                                    "Firebase Sign In entry point (Phase 5). Entering as guest for now.",
+                                    "Firebase Sign In entry point. Entering as guest for now.",
                                     Toast.LENGTH_LONG
                                 ).show()
                                 currentScreen = Screen.Main
@@ -59,7 +56,7 @@ class MainActivity : ComponentActivity() {
                             onSignInClicked = {
                                 Toast.makeText(
                                     this,
-                                    "Firebase Sign In entry point (Phase 5).",
+                                    "Firebase Sign In entry point.",
                                     Toast.LENGTH_SHORT
                                 ).show()
                             }

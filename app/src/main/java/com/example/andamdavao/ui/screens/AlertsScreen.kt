@@ -13,7 +13,6 @@ import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -21,9 +20,6 @@ import com.example.andamdavao.data.model.PublicAnnouncement
 import com.example.andamdavao.data.model.SampleData
 import com.example.andamdavao.ui.theme.*
 
-/**
- * Emergency Alerts screen bound to sample announcements dataset.
- */
 @Composable
 fun AlertsScreen(
     onAnnouncementSelected: (PublicAnnouncement) -> Unit
@@ -39,7 +35,6 @@ fun AlertsScreen(
             .fillMaxSize()
             .background(LightGrayBackground)
     ) {
-        // Header Bar
         Surface(
             color = SurfaceWhite,
             shadowElevation = 2.dp,
@@ -64,7 +59,6 @@ fun AlertsScreen(
 
                 Spacer(modifier = Modifier.height(14.dp))
 
-                // Tab Row
                 TabRow(
                     selectedTabIndex = selectedTab,
                     containerColor = SurfaceWhite,
@@ -94,7 +88,6 @@ fun AlertsScreen(
             }
         }
 
-        // Alerts List
         val currentList = if (selectedTab == 0) latestAlerts else historyAlerts
 
         LazyColumn(

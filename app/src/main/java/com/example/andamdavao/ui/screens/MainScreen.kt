@@ -11,16 +11,12 @@ import com.example.andamdavao.data.model.PublicAnnouncement
 import com.example.andamdavao.ui.components.AndamBottomNavigation
 import com.example.andamdavao.ui.components.NavTab
 
-/**
- * MainScreen housing the bottom navigation bar and managing screen stacks.
- */
 @Composable
 fun MainScreen(
     onSignInClicked: () -> Unit
 ) {
     var currentTab by remember { mutableStateOf<NavTab>(NavTab.Home) }
 
-    // Sub-screen navigation states
     var selectedCenter by remember { mutableStateOf<EvacuationCenter?>(null) }
     var selectedAnnouncement by remember { mutableStateOf<PublicAnnouncement?>(null) }
     var isDirectoryActive by remember { mutableStateOf(false) }
@@ -31,7 +27,6 @@ fun MainScreen(
                 currentRoute = currentTab.route,
                 onTabSelected = { tab ->
                     currentTab = tab
-                    // Reset sub-screen navigation when clicking bottom tabs
                     selectedCenter = null
                     selectedAnnouncement = null
                     isDirectoryActive = false
@@ -45,7 +40,6 @@ fun MainScreen(
                 .padding(innerPadding)
         ) {
             when {
-                // Center Detail View Overlay
                 selectedCenter != null -> {
                     EvacuationCenterDetailScreen(
                         center = selectedCenter!!,
@@ -53,7 +47,6 @@ fun MainScreen(
                     )
                 }
 
-                // Announcement Detail View Overlay
                 selectedAnnouncement != null -> {
                     AlertDetailScreen(
                         announcement = selectedAnnouncement!!,
@@ -61,7 +54,6 @@ fun MainScreen(
                     )
                 }
 
-                // Directory View Overlay
                 isDirectoryActive -> {
                     EvacuationDirectoryScreen(
                         onCenterSelected = { center ->
@@ -71,7 +63,6 @@ fun MainScreen(
                     )
                 }
 
-                // Main Tab Screens
                 else -> {
                     when (currentTab) {
                         NavTab.Home -> HomeScreen(

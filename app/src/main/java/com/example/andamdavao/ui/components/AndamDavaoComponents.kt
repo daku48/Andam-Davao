@@ -18,7 +18,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
@@ -27,9 +26,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.andamdavao.ui.theme.*
 
-/**
- * Custom Shield Logo Component matching Andam Davao's civic visual identity.
- */
 @Composable
 fun AndamShieldLogo(
     modifier: Modifier = Modifier,
@@ -56,7 +52,6 @@ fun AndamShieldLogo(
                 tint = SurfaceWhite,
                 modifier = Modifier.size(64.dp)
             )
-            // Red accent stripe
             Box(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
@@ -96,9 +91,6 @@ fun AndamShieldLogo(
     }
 }
 
-/**
- * Top Wave Header Accent for Brand Identity screens.
- */
 @Composable
 fun TopWaveAccent(
     modifier: Modifier = Modifier,
@@ -112,7 +104,6 @@ fun TopWaveAccent(
         val width = size.width
         val h = size.height
 
-        // Red wave path
         val redPath = Path().apply {
             moveTo(0f, 0f)
             lineTo(width, 0f)
@@ -122,7 +113,6 @@ fun TopWaveAccent(
         }
         drawPath(redPath, color = CrimsonRed)
 
-        // Navy wave path overlaid
         val navyPath = Path().apply {
             moveTo(0f, 0f)
             lineTo(width, 0f)
@@ -134,9 +124,6 @@ fun TopWaveAccent(
     }
 }
 
-/**
- * Status Badge for Evacuation Centers.
- */
 @Composable
 fun EvacuationStatusBadge(
     statusText: String,
@@ -163,10 +150,6 @@ fun EvacuationStatusBadge(
         )
     }
 }
-
-/**
- * Bottom Navigation Bar matching HCDC navy and crimson active tab indicator.
- */
 
 sealed class NavTab(val route: String, val title: String, val icon: ImageVector, val badgeCount: Int = 0) {
     object Home : NavTab("home", "Home", Icons.Default.Home)

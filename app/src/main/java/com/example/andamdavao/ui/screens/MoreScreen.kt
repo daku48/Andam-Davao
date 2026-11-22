@@ -12,7 +12,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -26,9 +25,6 @@ data class MoreOption(
     val onClick: () -> Unit
 )
 
-/**
- * More / Profile / Guest Settings screen matching Andam Davao visual guidelines.
- */
 @Composable
 fun MoreScreen(
     onSignInClicked: () -> Unit
@@ -53,7 +49,6 @@ fun MoreScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Guest User Card Banner
             item {
                 Spacer(modifier = Modifier.height(20.dp))
                 Column(
@@ -94,7 +89,6 @@ fun MoreScreen(
                 }
             }
 
-            // Options List
             item {
                 Card(
                     colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
@@ -146,7 +140,6 @@ fun MoreScreen(
                 }
             }
 
-            // Sign In Action Button
             item {
                 Spacer(modifier = Modifier.height(8.dp))
                 Button(
@@ -166,7 +159,6 @@ fun MoreScreen(
                 }
             }
 
-            // No Account Required Note
             item {
                 Card(
                     colors = CardDefaults.cardColors(containerColor = IceBlue),

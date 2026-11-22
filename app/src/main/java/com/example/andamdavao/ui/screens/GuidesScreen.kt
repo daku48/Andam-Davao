@@ -25,9 +25,6 @@ data class DetailedGuide(
     val bulletPoints: List<String>
 )
 
-/**
- * Preparedness Guide screen with expandable detailed instructions.
- */
 @Composable
 fun GuidesScreen() {
     var expandedTitle by remember { mutableStateOf<String?>(null) }
@@ -99,7 +96,6 @@ fun GuidesScreen() {
             .fillMaxSize()
             .background(LightGrayBackground)
     ) {
-        // Top Header
         Surface(
             color = SurfaceWhite,
             shadowElevation = 2.dp,
@@ -132,7 +128,6 @@ fun GuidesScreen() {
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Hero Banner
             item {
                 Card(
                     colors = CardDefaults.cardColors(containerColor = PrimaryNavy),
@@ -178,7 +173,6 @@ fun GuidesScreen() {
                 }
             }
 
-            // Guide Cards List
             items(guides) { guide ->
                 val isExpanded = expandedTitle == guide.title
 
