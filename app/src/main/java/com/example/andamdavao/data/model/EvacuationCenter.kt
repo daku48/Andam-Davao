@@ -16,5 +16,6 @@ data class EvacuationCenter(
     val verifiedAt: String,
     val verifiedBy: String,
     val contactNumber: String,
-    val distanceKm: Double = 1.2
+    // Computed on the device from the user's location. Null when location is unknown.
+    val distanceKm: Double? = null
 )

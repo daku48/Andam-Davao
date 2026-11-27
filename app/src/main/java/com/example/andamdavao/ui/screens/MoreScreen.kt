@@ -27,9 +27,13 @@ data class MoreOption(
 
 @Composable
 fun MoreScreen(
-    onSignInClicked: () -> Unit
+    onSignInClicked: () -> Unit,
+    onHotlinesClicked: () -> Unit,
+    onGuidesClicked: () -> Unit
 ) {
     val options = listOf(
+        MoreOption("Emergency Hotlines", Icons.Default.Phone) { onHotlinesClicked() },
+        MoreOption("Preparedness Guides", Icons.Default.VerifiedUser) { onGuidesClicked() },
         MoreOption("Favorites", Icons.Default.Favorite) { },
         MoreOption("Notification Settings", Icons.Default.Notifications) { },
         MoreOption("About Andam Davao", Icons.Default.Info) { },

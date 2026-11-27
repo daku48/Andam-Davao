@@ -21,7 +21,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.andamdavao.data.model.EvacuationCenter
-import com.example.andamdavao.data.model.SampleData
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.andamdavao.ui.AppViewModel
+import com.example.andamdavao.ui.components.DataStatusBanner
+import com.example.andamdavao.utils.CenterLogic
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.example.andamdavao.ui.components.EvacuationStatusBadge
 import com.example.andamdavao.ui.theme.*
 import com.example.andamdavao.utils.LocationUtils
@@ -37,7 +44,7 @@ data class EmergencyFacility(
 )
 
 @Composable
-fun MapScreen() {
+fun MapScreen(viewModel: AppViewModel = viewModel()) {
     val context = LocalContext.current
 
     val davaoCityCenter = remember { LatLng(7.0722, 125.6131) }
@@ -46,13 +53,14 @@ fun MapScreen() {
     }
 
     var searchQuery by remember { mutableStateOf("") }
-    var selectedCenter by remember { mutableStateOf<EvacuationCenter?>(SampleData.sampleCenters.first()) }
+    val centersState by viewModel.centers.collectAsState()
+    var selectedCenterId by rememberSaveable { mutableStateOf<String?>(null) }
+    val selectedCenter: EvacuationCenter? =
+        selectedCenterId?.let { id -> centersState.items.firstOrNull { it.id == id } }
     var isLegendExpanded by remember { mutableStateOf(true) }
     var showBarangaySelector by remember { mutableStateOf(false) }
-    var selectedBarangay by remember { mutableStateOf("Davao City") }
+    var selectedBarangay by remember { mutableStateOf("All") }
 
-    var showFloodOverlay by remember { mutableStateOf(true) }
-    var showLandslideOverlay by remember { mutableStateOf(false) }
     var showEmergencyFacilities by remember { mutableStateOf(true) }
 
     var hasLocationPermission by remember { mutableStateOf(LocationUtils.hasLocationPermission(context)) }
@@ -64,6 +72,10 @@ fun MapScreen() {
                 (permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true)
     }
 
+    LaunchedEffect(hasLocationPermission) {
+        if (hasLocationPermission) viewModel.refreshLocation()
+    }
+
     val emergencyFacilities = remember {
         listOf(
             EmergencyFacility("SPMC Main Hospital", "Hospital", 7.0988, 125.6267),
@@ -72,12 +84,7 @@ fun MapScreen() {
         )
     }
 
-    val davaoFilteredCenters = SampleData.sampleCenters.filter { center ->
-        searchQuery.isEmpty() ||
-                center.centerName.contains(searchQuery, ignoreCase = true) ||
-                center.barangay.contains(searchQuery, ignoreCase = true) ||
-                center.district.contains(searchQuery, ignoreCase = true)
-    }
+    val davaoFilteredCenters = CenterLogic.filter(centersState.items, searchQuery)
 
     Box(
         modifier = Modifier
@@ -97,15 +104,18 @@ fun MapScreen() {
             )
         ) {
             davaoFilteredCenters.forEach { center ->
-                Marker(
-                    state = rememberMarkerState(position = LatLng(center.latitude, center.longitude)),
-                    title = center.centerName,
-                    snippet = "${center.barangay} • ${center.status}",
-                    onClick = {
-                        selectedCenter = center
-                        true
-                    }
-                )
+                key(center.id) {
+                    Marker(
+                        state = rememberMarkerState(position = LatLng(center.latitude, center.longitude)),
+                        title = center.centerName,
+                        snippet = "${center.barangay} \u00B7 ${center.status}",
+                        icon = BitmapDescriptorFactory.defaultMarker(markerHue(center.status)),
+                        onClick = {
+                            selectedCenterId = center.id
+                            true
+                        }
+                    )
+                }
             }
 
             if (showEmergencyFacilities) {
@@ -118,33 +128,6 @@ fun MapScreen() {
                 }
             }
 
-            if (showFloodOverlay) {
-                Polygon(
-                    points = listOf(
-                        LatLng(7.0500, 125.5900),
-                        LatLng(7.0800, 125.6100),
-                        LatLng(7.0700, 125.6300),
-                        LatLng(7.0400, 125.6100)
-                    ),
-                    fillColor = HazardFloodRed.copy(alpha = 0.25f),
-                    strokeColor = HazardFloodRed,
-                    strokeWidth = 2f
-                )
-            }
-
-            if (showLandslideOverlay) {
-                Polygon(
-                    points = listOf(
-                        LatLng(7.1800, 125.4500),
-                        LatLng(7.2200, 125.4800),
-                        LatLng(7.2000, 125.5200),
-                        LatLng(7.1500, 125.4900)
-                    ),
-                    fillColor = HazardLandslideOrange.copy(alpha = 0.30f),
-                    strokeColor = HazardLandslideOrange,
-                    strokeWidth = 2f
-                )
-            }
         }
 
         Column(
@@ -211,13 +194,13 @@ fun MapScreen() {
                             fontWeight = FontWeight.Bold
                         )
                         Spacer(modifier = Modifier.height(6.dp))
-                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                            LocationUtils.davaoBarangays.take(4).forEach { bgy ->
+                        LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            items(listOf("All") + LocationUtils.davaoBarangays) { bgy ->
                                 FilterChip(
                                     selected = selectedBarangay == bgy,
                                     onClick = {
                                         selectedBarangay = bgy
-                                        searchQuery = bgy
+                                        searchQuery = if (bgy == "All") "" else bgy
                                         showBarangaySelector = false
                                     },
                                     label = { Text(bgy, fontSize = 11.sp) },
@@ -229,6 +212,15 @@ fun MapScreen() {
                 }
             }
         }
+
+        DataStatusBanner(
+            state = centersState,
+            onRetry = { viewModel.refresh() },
+            emptyText = "No verified evacuation centers available yet.",
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .padding(top = 80.dp, start = 16.dp, end = 16.dp)
+        )
 
         if (isLegendExpanded) {
             Card(
@@ -267,33 +259,7 @@ fun MapScreen() {
                     MapLegendItem(color = StatusVerifiedGreen, label = "Open Center")
                     MapLegendItem(color = StatusCautionAmber, label = "Full Center")
                     MapLegendItem(color = CrimsonRed, label = "Closed Center")
-                    MapLegendItem(color = Color(0xFF757575), label = "Status Unknown")
-
-                    HorizontalDivider(modifier = Modifier.padding(vertical = 6.dp), color = DividerGray)
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.clickable { showFloodOverlay = !showFloodOverlay }
-                    ) {
-                        Checkbox(
-                            checked = showFloodOverlay,
-                            onCheckedChange = { showFloodOverlay = it },
-                            colors = CheckboxDefaults.colors(checkedColor = CrimsonRed)
-                        )
-                        Text("Flood Hazard (MGB Layer)", fontSize = 11.sp, color = TextPrimaryNavy)
-                    }
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.clickable { showLandslideOverlay = !showLandslideOverlay }
-                    ) {
-                        Checkbox(
-                            checked = showLandslideOverlay,
-                            onCheckedChange = { showLandslideOverlay = it },
-                            colors = CheckboxDefaults.colors(checkedColor = HazardLandslideOrange)
-                        )
-                        Text("Landslide (MGB XI)", fontSize = 11.sp, color = TextPrimaryNavy)
-                    }
+                    MapLegendItem(color = Color(0xFF8E24AA), label = "Status Unknown")
                 }
             }
         }
@@ -366,7 +332,7 @@ fun MapScreen() {
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
-                                text = "${center.barangay}, Davao City • ${center.distanceKm} km away",
+                                text = "${center.barangay}, Davao City • ${center.distanceKm?.let { "$it km away" } ?: "distance unknown"}",
                                 color = TextSecondary,
                                 fontSize = 12.sp
                             )
@@ -420,6 +386,13 @@ fun MapScreen() {
             }
         }
     }
+}
+
+private fun markerHue(status: String): Float = when (status.lowercase()) {
+    "open" -> BitmapDescriptorFactory.HUE_GREEN
+    "full" -> BitmapDescriptorFactory.HUE_ORANGE
+    "closed" -> BitmapDescriptorFactory.HUE_RED
+    else -> BitmapDescriptorFactory.HUE_VIOLET
 }
 
 @Composable

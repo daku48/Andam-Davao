@@ -21,28 +21,32 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.andamdavao.data.model.PublicAnnouncement
-import com.example.andamdavao.data.model.SampleData
-import com.example.andamdavao.data.repository.AnnouncementRepository
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.ImeAction
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.andamdavao.ui.AppViewModel
+import com.example.andamdavao.ui.components.DataStatusBanner
+import com.example.andamdavao.ui.components.WeatherCard
 import com.example.andamdavao.ui.theme.*
 
 @Composable
 fun HomeScreen(
     onNavigateToMap: () -> Unit,
-    onNavigateToCenters: () -> Unit,
+    onNavigateToCenters: (String) -> Unit,
     onNavigateToHotlines: () -> Unit,
     onNavigateToGuides: () -> Unit,
-    onAnnouncementSelected: (PublicAnnouncement) -> Unit
+    onNavigateToAlerts: () -> Unit,
+    onAnnouncementSelected: (PublicAnnouncement) -> Unit,
+    viewModel: AppViewModel = viewModel()
 ) {
     var searchQuery by remember { mutableStateOf("") }
-    var announcements by remember { mutableStateOf(SampleData.sampleAnnouncements) }
 
-    val announcementRepo = remember { AnnouncementRepository() }
+    val announcementsState by viewModel.announcements.collectAsState()
+    val weatherState by viewModel.weather.collectAsState()
 
-    LaunchedEffect(Unit) {
-        announcements = announcementRepo.fetchPublicAnnouncements()
-    }
-
-    val primaryAlert = announcements.firstOrNull { it.severity == "Urgent" }
+    val activeAnnouncements = announcementsState.items.filter { !it.isHistory }
+    val primaryAlert = activeAnnouncements.firstOrNull { it.severity == "Urgent" }
 
     LazyColumn(
         modifier = Modifier
@@ -96,7 +100,7 @@ fun HomeScreen(
                     }
 
                     Box(contentAlignment = Alignment.TopEnd) {
-                        IconButton(onClick = { }) {
+                        IconButton(onClick = onNavigateToAlerts) {
                             Icon(
                                 imageVector = Icons.Default.Notifications,
                                 contentDescription = "Notifications",
@@ -104,13 +108,15 @@ fun HomeScreen(
                                 modifier = Modifier.size(26.dp)
                             )
                         }
-                        Box(
-                            modifier = Modifier
-                                .padding(top = 8.dp, end = 8.dp)
-                                .size(10.dp)
-                                .clip(CircleShape)
-                                .background(CrimsonRed)
-                        )
+                        if (activeAnnouncements.isNotEmpty()) {
+                            Box(
+                                modifier = Modifier
+                                    .padding(top = 8.dp, end = 8.dp)
+                                    .size(10.dp)
+                                    .clip(CircleShape)
+                                    .background(CrimsonRed)
+                            )
+                        }
                     }
                 }
             }
@@ -183,6 +189,18 @@ fun HomeScreen(
         }
 
         item {
+            DataStatusBanner(
+                state = announcementsState,
+                onRetry = { viewModel.refresh() },
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp)
+            )
+            WeatherCard(
+                state = weatherState,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+            )
+        }
+
+        item {
             Box(modifier = Modifier.padding(horizontal = 16.dp)) {
                 OutlinedTextField(
                     value = searchQuery,
@@ -195,6 +213,9 @@ fun HomeScreen(
                             tint = TextSecondary
                         )
                     },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                    keyboardActions = KeyboardActions(onSearch = { onNavigateToCenters(searchQuery) }),
                     shape = RoundedCornerShape(24.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedContainerColor = SurfaceWhite,
@@ -224,7 +245,7 @@ fun HomeScreen(
                         title = "Evacuation\nCenters",
                         icon = Icons.Default.Apartment,
                         modifier = Modifier.weight(1f),
-                        onClick = onNavigateToCenters
+                        onClick = { onNavigateToCenters("") }
                     )
                 }
 
@@ -270,15 +291,26 @@ fun HomeScreen(
                     color = CrimsonRed,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.clickable { }
+                    modifier = Modifier.clickable { onNavigateToAlerts() }
                 )
             }
 
             Spacer(modifier = Modifier.height(10.dp))
         }
 
-        SampleData.sampleAnnouncements.take(2).forEach { announcement ->
+        if (activeAnnouncements.isEmpty() && !announcementsState.isLoading) {
             item {
+                Text(
+                    text = "No active announcements right now.",
+                    color = TextSecondary,
+                    fontSize = 13.sp,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                )
+            }
+        }
+
+        activeAnnouncements.take(2).forEach { announcement ->
+            item(key = announcement.id) {
                 Card(
                     onClick = { onAnnouncementSelected(announcement) },
                     colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
@@ -356,7 +388,7 @@ fun QuickActionCard(
         ) {
             Icon(
                 imageVector = icon,
-                contentDescription = title,
+                contentDescription = null,
                 tint = PrimaryNavy,
                 modifier = Modifier.size(32.dp)
             )

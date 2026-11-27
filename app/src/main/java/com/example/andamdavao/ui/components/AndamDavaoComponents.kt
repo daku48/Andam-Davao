@@ -154,14 +154,24 @@ fun EvacuationStatusBadge(
 sealed class NavTab(val route: String, val title: String, val icon: ImageVector, val badgeCount: Int = 0) {
     object Home : NavTab("home", "Home", Icons.Default.Home)
     object Map : NavTab("map", "Map", Icons.Default.LocationOn)
-    object Alerts : NavTab("alerts", "Alerts", Icons.Default.Notifications, badgeCount = 2)
+    object Alerts : NavTab("alerts", "Alerts", Icons.Default.Notifications)
     object More : NavTab("more", "More", Icons.Default.Menu)
+
+    companion object {
+        fun fromRoute(route: String): NavTab = when (route) {
+            "map" -> Map
+            "alerts" -> Alerts
+            "more" -> More
+            else -> Home
+        }
+    }
 }
 
 @Composable
 fun AndamBottomNavigation(
     currentRoute: String,
-    onTabSelected: (NavTab) -> Unit
+    onTabSelected: (NavTab) -> Unit,
+    alertBadgeCount: Int = 0
 ) {
     val tabs = listOf(NavTab.Home, NavTab.Map, NavTab.Alerts, NavTab.More)
 
@@ -179,6 +189,7 @@ fun AndamBottomNavigation(
         ) {
             tabs.forEach { tab ->
                 val isSelected = currentRoute == tab.route
+                val badge = if (tab.route == NavTab.Alerts.route) alertBadgeCount else tab.badgeCount
 
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -194,7 +205,7 @@ fun AndamBottomNavigation(
                             modifier = Modifier.size(24.dp)
                         )
 
-                        if (tab.badgeCount > 0) {
+                        if (badge > 0) {
                             Box(
                                 modifier = Modifier
                                     .size(14.dp)
@@ -203,7 +214,7 @@ fun AndamBottomNavigation(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = tab.badgeCount.toString(),
+                                    text = if (badge > 9) "9+" else badge.toString(),
                                     color = SurfaceWhite,
                                     fontSize = 9.sp,
                                     fontWeight = FontWeight.Bold

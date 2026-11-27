@@ -31,6 +31,8 @@ fun HotlinesScreen() {
     val context = LocalContext.current
 
     val hotlines = listOf(
+        // TODO: verify every number below against official sources before release.
+        EmergencyHotline("National Emergency Hotline", "911"),
         EmergencyHotline("Davao City DRRMO", "(082) 241-1000"),
         EmergencyHotline("Philippine Red Cross", "(082) 226-4521"),
         EmergencyHotline("BFP Davao City", "(082) 224-4206"),
@@ -149,7 +151,11 @@ fun HotlinesScreen() {
                                 val intent = Intent(Intent.ACTION_DIAL).apply {
                                     data = Uri.parse("tel:${hotline.phoneNumber.replace("[^0-9]".toRegex(), "")}")
                                 }
-                                context.startActivity(intent)
+                                try {
+                                    context.startActivity(intent)
+                                } catch (e: android.content.ActivityNotFoundException) {
+                                    // Device has no dialer app.
+                                }
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = PrimaryNavy),
                             shape = RoundedCornerShape(20.dp),
