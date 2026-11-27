@@ -11,6 +11,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -18,41 +19,29 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.andamdavao.data.model.EvacuationCenter
-import com.example.andamdavao.data.model.SampleData
-import com.example.andamdavao.data.repository.EvacuationCenterRepository
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.andamdavao.ui.AppViewModel
+import com.example.andamdavao.ui.components.DataStatusBanner
+import com.example.andamdavao.utils.CenterLogic
 import com.example.andamdavao.ui.components.EvacuationStatusBadge
 import com.example.andamdavao.ui.theme.*
 
 @Composable
 fun EvacuationDirectoryScreen(
     onCenterSelected: (EvacuationCenter) -> Unit,
-    onBackClicked: () -> Unit
+    onBackClicked: () -> Unit,
+    initialQuery: String = "",
+    viewModel: AppViewModel = viewModel()
 ) {
-    var searchQuery by remember { mutableStateOf("") }
-    var selectedFilter by remember { mutableStateOf("All") }
+    var searchQuery by rememberSaveable { mutableStateOf(initialQuery) }
+    var selectedFilter by rememberSaveable { mutableStateOf("All") }
     val filters = listOf("All", "Open", "Full", "Closed")
 
-    var centersList by remember { mutableStateOf(SampleData.sampleCenters) }
-    val centerRepo = remember { EvacuationCenterRepository() }
+    val centersState by viewModel.centers.collectAsState()
+    val filteredCenters = CenterLogic.filter(centersState.items, searchQuery, selectedFilter)
 
-    LaunchedEffect(Unit) {
-        centersList = centerRepo.fetchPublicEvacuationCenters()
-    }
-
-    val filteredCenters = centersList.filter { center ->
-        val matchesSearch = center.centerName.contains(searchQuery, ignoreCase = true) ||
-                center.barangay.contains(searchQuery, ignoreCase = true) ||
-                center.district.contains(searchQuery, ignoreCase = true)
-
-        val matchesFilter = when (selectedFilter) {
-            "Open" -> center.status.equals("Open", ignoreCase = true)
-            "Full" -> center.status.equals("Full", ignoreCase = true)
-            "Closed" -> center.status.equals("Closed", ignoreCase = true)
-            else -> true
-        }
-
-        matchesSearch && matchesFilter
-    }
+    // Distance and nearest-first sorting need location. No-op if permission is not granted.
+    LaunchedEffect(Unit) { viewModel.refreshLocation() }
 
     Column(
         modifier = Modifier
@@ -134,12 +123,34 @@ fun EvacuationDirectoryScreen(
             }
         }
 
+        DataStatusBanner(
+            state = centersState,
+            onRetry = { viewModel.refresh() },
+            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp)
+        )
+
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            items(filteredCenters) { center ->
+            if (centersState.isLoading && centersState.isEmpty) {
+                item {
+                    Box(modifier = Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = PrimaryNavy)
+                    }
+                }
+            } else if (filteredCenters.isEmpty() && !centersState.hasError) {
+                item {
+                    Text(
+                        text = "No evacuation centers match your search.",
+                        color = TextSecondary,
+                        fontSize = 13.sp
+                    )
+                }
+            }
+
+            items(filteredCenters, key = { it.id }) { center ->
                 CenterListItem(
                     center = center,
                     onClick = { onCenterSelected(center) }
@@ -230,7 +241,7 @@ fun CenterListItem(
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = "${center.distanceKm} km away",
+                        text = center.distanceKm?.let { "$it km away" } ?: "distance unknown",
                         color = RoyalBlue,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold

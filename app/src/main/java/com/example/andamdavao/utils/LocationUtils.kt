@@ -1,6 +1,7 @@
 package com.example.andamdavao.utils
 
 import android.Manifest
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -50,17 +51,18 @@ object LocationUtils {
         val mapIntent = Intent(Intent.ACTION_VIEW, geoUri).apply {
             setPackage("com.google.android.apps.maps")
         }
+        val webUri = Uri.parse("https://www.google.com/maps/search/?api=1&query=$latitude,$longitude")
 
+        // resolveActivity() returns null on Android 11+ without a <queries> entry,
+        // so just try to launch and fall back to the browser if Google Maps is missing.
         try {
-            if (mapIntent.resolveActivity(context.packageManager) != null) {
-                context.startActivity(mapIntent)
-            } else {
-                val webUri = Uri.parse("https://www.google.com/maps/search/?api=1&query=$latitude,$longitude")
+            context.startActivity(mapIntent)
+        } catch (e: ActivityNotFoundException) {
+            try {
                 context.startActivity(Intent(Intent.ACTION_VIEW, webUri))
+            } catch (e2: ActivityNotFoundException) {
+                // No app can open maps or links. Nothing else to do.
             }
-        } catch (e: Exception) {
-            val webUri = Uri.parse("https://www.google.com/maps/search/?api=1&query=$latitude,$longitude")
-            context.startActivity(Intent(Intent.ACTION_VIEW, webUri))
         }
     }
 

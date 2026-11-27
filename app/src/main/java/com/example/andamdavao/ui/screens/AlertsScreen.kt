@@ -17,18 +17,22 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.andamdavao.data.model.PublicAnnouncement
-import com.example.andamdavao.data.model.SampleData
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.andamdavao.ui.AppViewModel
+import com.example.andamdavao.ui.components.DataStatusBanner
 import com.example.andamdavao.ui.theme.*
 
 @Composable
 fun AlertsScreen(
-    onAnnouncementSelected: (PublicAnnouncement) -> Unit
+    onAnnouncementSelected: (PublicAnnouncement) -> Unit,
+    viewModel: AppViewModel = viewModel()
 ) {
     var selectedTab by remember { mutableStateOf(0) }
     val tabs = listOf("Latest", "History")
 
-    val latestAlerts = SampleData.sampleAnnouncements.filter { !it.isHistory }
-    val historyAlerts = SampleData.sampleAnnouncements.filter { it.isHistory }
+    val state by viewModel.announcements.collectAsState()
+    val latestAlerts = state.items.filter { !it.isHistory }
+    val historyAlerts = state.items.filter { it.isHistory }
 
     Column(
         modifier = Modifier
@@ -90,12 +94,28 @@ fun AlertsScreen(
 
         val currentList = if (selectedTab == 0) latestAlerts else historyAlerts
 
+        DataStatusBanner(
+            state = state,
+            onRetry = { viewModel.refresh() },
+            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp)
+        )
+
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            items(currentList) { alert ->
+            if (currentList.isEmpty() && !state.isLoading) {
+                item {
+                    Text(
+                        text = if (selectedTab == 0) "No active announcements right now." else "No past announcements.",
+                        color = TextSecondary,
+                        fontSize = 13.sp
+                    )
+                }
+            }
+
+            items(currentList, key = { it.id }) { alert ->
                 val severityColor = when (alert.severity.lowercase()) {
                     "urgent" -> CrimsonRed
                     "advisory" -> RoyalBlue
